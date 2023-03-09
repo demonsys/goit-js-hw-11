@@ -34,7 +34,7 @@ function onSearch(e) {
 
 function renderCard(card) {
   // const markup = photocardTpl(card);
-  const { webformatURL, tags, likes } = card;
+  const { webformatURL, tags, likes, views, comments, downloads } = card;
   const markup = `
   <div class="photo-card">
     <img src="${webformatURL}$" alt="${tags}" loading="lazy" />
@@ -45,15 +45,15 @@ function renderCard(card) {
       </p>
       <p class="info-item">
         <b>Views</b>
-        {{ views }}
+        ${views}
       </p>
       <p class="info-item">
         <b>Comments</b>
-        {{ comments }}
+        ${comments}
       </p>
       <p class="info-item">
         <b>Downloads</b>
-        {{ downloads }}
+       ${downloads}
       </p>
     </div>
   </div>`;
