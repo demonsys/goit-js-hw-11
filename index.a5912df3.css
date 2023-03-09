@@ -1,0 +1,2 @@
+h1,h2,h3,h4,h5,h6,p,ul,li{margin:0;padding:0}a{text-decoration:none}img{max-width:100%;height:auto;display:block}.gallery{flex-wrap:wrap;gap:20px;display:flex}.photo-card{flex-basis:calc(25% - 15px)}.photo-card img{object-fit:cover;height:100%;width:100%}.info{text-align:center;justify-content:space-around;align-items:center;display:flex}.info-item{flex-direction:column;display:flex}
+/*# sourceMappingURL=index.a5912df3.css.map */
