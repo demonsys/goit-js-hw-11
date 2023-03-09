@@ -1,0 +1,44 @@
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+ul,
+li {
+  padding: 0;
+  margin: 0;
+}
+a {
+  text-decoration: none;
+}
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.photo-card {
+  flex-basis: calc((100% - 60px) / 4);
+}
+.photo-card img {
+  object-fit: cover;
+  height: 100%;
+  width: 100%;
+}
+.info {
+  display: flex;
+  text-align: center;
+  justify-content: space-around;
+  align-items: center;
+}
+.info-item {
+  display: flex;
+  flex-direction: column;
+}
