@@ -1,5 +1,5 @@
-// import photocardTpl from './templates/photo-card.hbs';
-// import SimpleLightbox from 'simplelightbox';
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
 const API_KEY = '34212325-c6ab7e135f4fe9a0ab32789f1';
 const BASE_URL = 'https://pixabay.com/api/';
 const searchParams = new URLSearchParams({
@@ -26,7 +26,6 @@ function onSearch(e) {
     .then(r => r.json())
     .then(r => {
       r.hits.map(card => {
-        console.log(card);
         renderCard(card);
       });
     });
@@ -34,11 +33,21 @@ function onSearch(e) {
 
 function renderCard(card) {
   // const markup = photocardTpl(card);
-  const { webformatURL, tags, likes, views, comments, downloads } = card;
+  const {
+    webformatURL,
+    tags,
+    likes,
+    views,
+    comments,
+    downloads,
+    largeImageURL,
+  } = card;
   const markup = `
   <div class="photo-card">
-    <img src="${webformatURL}$" alt="${tags}" loading="lazy" />
-    <div class="info">
+  <a href='${largeImageURL}' class='photo-link'>
+    <img src="${webformatURL}$" alt="${tags}" loading="lazy"/>
+    </a>
+      <div class="info">
       <p class="info-item">
         <b>Likes</b>
         ${likes}
@@ -58,4 +67,9 @@ function renderCard(card) {
     </div>
   </div>`;
   refs.gallery.insertAdjacentHTML('beforeend', markup);
+  gallery.refresh();
 }
+let gallery = new SimpleLightbox('.gallery a', {
+  captionsData: 'alt',
+  captionDelay: 250,
+});
