@@ -15,20 +15,51 @@ function onSearch(e) {
   e.preventDefault();
   imagesApi.searchQuery = e.target.elements.searchQuery.value.trim();
   if (imagesApi.searchQuery === '') {
-    return Notify.info('Please enter a search query', {
-      position: 'center-top',
-    });
+    return Notify.info('Please enter a search query');
   }
   refs.gallery.innerHTML = '';
-  imagesApi.fetchImages().then(response => {
-    response.map(card => {
-      renderCard(card);
+  imagesApi.resetPage();
+  try {
+    renderAllCards().then(totalHits => {
+      if (totalHits > 0) {
+        Notify.info(`Hooray! We found ${totalHits} images.`);
+      }
+      if (totalHits < imagesApi.imagesPerPage) {
+        refs.loadMore.classList.add('hidden');
+      }
     });
-  });
+  } catch (error) {
+    Notify.failure(error.message);
+  }
+  refs.loadMore.addEventListener('click', renderAllCards);
 }
 
+const renderAllCards = async () => {
+  refs.loadMore.classList.add('hidden');
+  try {
+    const images = await imagesApi.fetchImages();
+    if (imagesApi.totalHits === 0) {
+      return Notify.info(
+        'Sorry, there are no images matching your search query. Please try again.'
+      );
+    }
+    images.hits.map(renderCard);
+    if (
+      imagesApi.page >= imagesApi.totalHits / imagesApi.imagesPerPage &&
+      imagesApi.page !== 1
+    ) {
+      Notify.info("We're sorry, but you've reached the end of search results.");
+      return imagesApi.totalHits;
+    }
+    refs.loadMore.classList.remove('hidden');
+    return imagesApi.totalHits;
+  } catch (error) {
+    Notify.failure(error.message);
+    console.log(error);
+    return;
+  }
+};
 function renderCard(card) {
-  // const markup = photocardTpl(card);
   const {
     webformatURL,
     tags,
