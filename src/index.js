@@ -1,34 +1,30 @@
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-const API_KEY = '34212325-c6ab7e135f4fe9a0ab32789f1';
-const BASE_URL = 'https://pixabay.com/api/';
-const searchParams = new URLSearchParams({
-  key: API_KEY,
-  image_type: 'photo',
-  orientation: 'horizontal',
-  safesearch: true,
-  page: 1,
-  per_page: 40,
-});
+import axios from 'axios';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import ImagesApi from './fetchImages.js';
 const refs = {
   searchForm: document.querySelector('#search-form'),
   gallery: document.querySelector('.gallery'),
   searchQuery: document.querySelector('input[name="searchQuery"]'),
+  loadMore: document.querySelector('.load-more'),
 };
+const imagesApi = new ImagesApi();
 refs.searchForm.addEventListener('submit', onSearch);
 function onSearch(e) {
   e.preventDefault();
-  if (refs.searchQuery.value === '') {
-    return alert('Введите хоть что-то');
+  imagesApi.searchQuery = e.target.elements.searchQuery.value.trim();
+  if (imagesApi.searchQuery === '') {
+    return Notify.info('Please enter a search query', {
+      position: 'center-top',
+    });
   }
   refs.gallery.innerHTML = '';
-  fetch(`${BASE_URL}?${searchParams}&q=${refs.searchQuery.value}`)
-    .then(r => r.json())
-    .then(r => {
-      r.hits.map(card => {
-        renderCard(card);
-      });
+  imagesApi.fetchImages().then(response => {
+    response.map(card => {
+      renderCard(card);
     });
+  });
 }
 
 function renderCard(card) {
