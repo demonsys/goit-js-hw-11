@@ -20,39 +20,49 @@ function onSearch(e) {
   if (imagesApi.searchQuery === '') {
     return Notify.info('Please enter a search query');
   }
-  renderPage().then(totalHits => {
-    if (totalHits > 0) {
-      Notify.info(`Hooray! We found ${totalHits} images.`);
-      refs.loadMore.classList.remove('hidden');
-      refs.loadMore.addEventListener('click', renderMore);
-    }
-    if (totalHits < imagesApi.imagesPerPage) {
-      refs.loadMore.classList.add('hidden');
-    }
-  });
+  renderPage()
+    .then(totalHits => {
+      if (totalHits > 0) {
+        Notify.info(`Hooray! We found ${totalHits} images.`);
+        refs.loadMore.classList.remove('hidden');
+        refs.loadMore.addEventListener('click', renderMore);
+      }
+      if (totalHits < imagesApi.imagesPerPage) {
+        refs.loadMore.classList.add('hidden');
+      }
+    })
+    .catch(error => {
+      Notify.failure(error.message);
+      console.log(error);
+    });
 }
 function renderMore() {
   refs.loadMore.classList.add('hidden');
-  renderPage().then(() => {
-    const { height: cardHeight } = document
-      .querySelector('.gallery')
-      .firstElementChild.getBoundingClientRect();
+  renderPage()
+    .then(() => {
+      const { height: cardHeight } = document
+        .querySelector('.gallery')
+        .firstElementChild.getBoundingClientRect();
 
-    window.scrollBy({
-      top: cardHeight * 2,
-      behavior: 'smooth',
+      window.scrollBy({
+        top: cardHeight * 2,
+        behavior: 'smooth',
+      });
+      if (
+        imagesApi.page >= imagesApi.totalHits / imagesApi.imagesPerPage &&
+        imagesApi.page !== 1
+      ) {
+        refs.loadMore.removeEventListener('click', renderMore);
+        return Notify.info(
+          "We're sorry, but you've reached the end of search results."
+        );
+      }
+      refs.loadMore.classList.remove('hidden');
+    })
+    .catch(error => {
+      Notify.failure(error.message);
+      console.log(error);
     });
-    if (
-      imagesApi.page >= imagesApi.totalHits / imagesApi.imagesPerPage &&
-      imagesApi.page !== 1
-    ) {
-      refs.loadMore.removeEventListener('click', renderMore);
-      return Notify.info(
-        "We're sorry, but you've reached the end of search results."
-      );
-    }
-    refs.loadMore.classList.remove('hidden');
-  });
 }
 const renderPage = async () => {
   try {
