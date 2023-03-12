@@ -1,6 +1,6 @@
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-import axios from 'axios';
+import OnlyScroll from 'only-scrollbar';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import ImagesApi from './fetchImages.js';
 const refs = {
@@ -22,14 +22,16 @@ function onSearch(e) {
   renderPage().then(totalHits => {
     if (totalHits > 0) {
       Notify.info(`Hooray! We found ${totalHits} images.`);
+      refs.loadMore.classList.remove('hidden');
+      refs.loadMore.addEventListener('click', renderMore);
     }
     if (totalHits < imagesApi.imagesPerPage) {
       refs.loadMore.classList.add('hidden');
     }
   });
-  refs.loadMore.addEventListener('click', renderMore);
 }
 function renderMore() {
+  refs.loadMore.classList.add('hidden');
   renderPage().then(() => {
     const { height: cardHeight } = document
       .querySelector('.gallery')
@@ -39,26 +41,29 @@ function renderMore() {
       top: cardHeight * 2,
       behavior: 'smooth',
     });
+    if (
+      imagesApi.page >= imagesApi.totalHits / imagesApi.imagesPerPage &&
+      imagesApi.page !== 1
+    ) {
+      refs.loadMore.removeEventListener('click', renderMore);
+      return Notify.info(
+        "We're sorry, but you've reached the end of search results."
+      );
+    }
+    refs.loadMore.classList.remove('hidden');
   });
 }
 const renderPage = async () => {
-  refs.loadMore.classList.add('hidden');
   try {
     const images = await imagesApi.fetchImages();
     if (imagesApi.totalHits === 0) {
+      refs.loadMore.classList.add('hidden');
       return Notify.info(
         'Sorry, there are no images matching your search query. Please try again.'
       );
     }
     images.hits.map(renderCard);
-    if (
-      imagesApi.page >= imagesApi.totalHits / imagesApi.imagesPerPage &&
-      imagesApi.page !== 1
-    ) {
-      Notify.info("We're sorry, but you've reached the end of search results.");
-      return imagesApi.totalHits;
-    }
-    refs.loadMore.classList.remove('hidden');
+    const scroll = new OnlyScroll(document.scrollingElement);
     return imagesApi.totalHits;
   } catch (error) {
     Notify.failure(error.message);
