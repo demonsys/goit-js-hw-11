@@ -19,22 +19,29 @@ function onSearch(e) {
   }
   refs.gallery.innerHTML = '';
   imagesApi.resetPage();
-  try {
-    renderAllCards().then(totalHits => {
-      if (totalHits > 0) {
-        Notify.info(`Hooray! We found ${totalHits} images.`);
-      }
-      if (totalHits < imagesApi.imagesPerPage) {
-        refs.loadMore.classList.add('hidden');
-      }
-    });
-  } catch (error) {
-    Notify.failure(error.message);
-  }
-  refs.loadMore.addEventListener('click', renderAllCards);
+  renderPage().then(totalHits => {
+    if (totalHits > 0) {
+      Notify.info(`Hooray! We found ${totalHits} images.`);
+    }
+    if (totalHits < imagesApi.imagesPerPage) {
+      refs.loadMore.classList.add('hidden');
+    }
+  });
+  refs.loadMore.addEventListener('click', renderMore);
 }
+function renderMore() {
+  renderPage().then(() => {
+    const { height: cardHeight } = document
+      .querySelector('.gallery')
+      .firstElementChild.getBoundingClientRect();
 
-const renderAllCards = async () => {
+    window.scrollBy({
+      top: cardHeight * 2,
+      behavior: 'smooth',
+    });
+  });
+}
+const renderPage = async () => {
   refs.loadMore.classList.add('hidden');
   try {
     const images = await imagesApi.fetchImages();
