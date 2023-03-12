@@ -11,6 +11,37 @@ const refs = {
 };
 const imagesApi = new ImagesApi();
 refs.searchForm.addEventListener('submit', onSearch);
+const renderPage = async () => {
+  try {
+    const images = await imagesApi.fetchImages();
+    if (imagesApi.totalHits === 0) {
+      return Notify.info(
+        'Sorry, there are no images matching your search query. Please try again.'
+      );
+    }
+    if (imagesApi.totalHits > 0 && imagesApi.page === 1) {
+      Notify.info(`Hooray! We found ${imagesApi.totalHits} images.`);
+    }
+    if (imagesApi.totalHits > imagesApi.imagesPerPage) {
+      refs.loadMore.classList.remove('hidden');
+      refs.loadMore.addEventListener('click', renderMore);
+    }
+    if (
+      imagesApi.totalHits <= imagesApi.page * imagesApi.imagesPerPage &&
+      imagesApi.page !== 1
+    ) {
+      refs.loadMore.classList.add('hidden');
+      refs.loadMore.removeEventListener('click', renderMore);
+      Notify.info("We're sorry, but you've reached the end of search results.");
+    }
+    images.hits.map(renderCard);
+    const scroll = new OnlyScroll(document.scrollingElement);
+    return imagesApi.totalHits;
+  } catch (error) {
+    Notify.failure(error.message);
+    console.log(error);
+  }
+};
 function onSearch(e) {
   e.preventDefault();
   refs.gallery.innerHTML = '';
@@ -20,68 +51,19 @@ function onSearch(e) {
   if (imagesApi.searchQuery === '') {
     return Notify.info('Please enter a search query');
   }
-  renderPage()
-    .then(totalHits => {
-      if (totalHits > 0) {
-        Notify.info(`Hooray! We found ${totalHits} images.`);
-        refs.loadMore.classList.remove('hidden');
-        refs.loadMore.addEventListener('click', renderMore);
-      }
-      if (totalHits < imagesApi.imagesPerPage) {
-        refs.loadMore.classList.add('hidden');
-      }
-    })
-    .catch(error => {
-      Notify.failure(error.message);
-      console.log(error);
-    });
+  renderPage();
 }
-function renderMore() {
+async function renderMore() {
   refs.loadMore.classList.add('hidden');
-  renderPage()
-    .then(() => {
-      const { height: cardHeight } = document
-        .querySelector('.gallery')
-        .firstElementChild.getBoundingClientRect();
-
-      window.scrollBy({
-        top: cardHeight * 2,
-        behavior: 'smooth',
-      });
-      if (
-        imagesApi.page >= imagesApi.totalHits / imagesApi.imagesPerPage &&
-        imagesApi.page !== 1
-      ) {
-        refs.loadMore.removeEventListener('click', renderMore);
-        return Notify.info(
-          "We're sorry, but you've reached the end of search results."
-        );
-      }
-      refs.loadMore.classList.remove('hidden');
-    })
-    .catch(error => {
-      Notify.failure(error.message);
-      console.log(error);
-    });
+  await renderPage();
+  const { height: cardHeight } = document
+    .querySelector('.gallery')
+    .firstElementChild.getBoundingClientRect();
+  window.scrollBy({
+    top: cardHeight * 2,
+    behavior: 'smooth',
+  });
 }
-const renderPage = async () => {
-  try {
-    const images = await imagesApi.fetchImages();
-    if (imagesApi.totalHits === 0) {
-      refs.loadMore.classList.add('hidden');
-      return Notify.info(
-        'Sorry, there are no images matching your search query. Please try again.'
-      );
-    }
-    images.hits.map(renderCard);
-    const scroll = new OnlyScroll(document.scrollingElement);
-    return imagesApi.totalHits;
-  } catch (error) {
-    Notify.failure(error.message);
-    console.log(error);
-    return;
-  }
-};
 function renderCard(card) {
   const {
     webformatURL,
