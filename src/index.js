@@ -13,12 +13,13 @@ const imagesApi = new ImagesApi();
 refs.searchForm.addEventListener('submit', onSearch);
 function onSearch(e) {
   e.preventDefault();
+  refs.gallery.innerHTML = '';
+  imagesApi.resetPage();
+  refs.loadMore.classList.add('hidden');
   imagesApi.searchQuery = e.target.elements.searchQuery.value.trim();
   if (imagesApi.searchQuery === '') {
     return Notify.info('Please enter a search query');
   }
-  refs.gallery.innerHTML = '';
-  imagesApi.resetPage();
   renderPage().then(totalHits => {
     if (totalHits > 0) {
       Notify.info(`Hooray! We found ${totalHits} images.`);
